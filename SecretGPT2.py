@@ -19,7 +19,7 @@ teman = {
     "Brilliant99": {"nama": "Bandoe Widiarto", "pesan": "Halo, ini pesan pribadi Abil untuk Bp. Bandoe.", "kesan": "Kita pertama kali ketemu saat ikut melakukan pengawasan PJP di Surabaya 2024. Saya mewakili teman-teman KPwDN melaporkan hasil temuan ke bapak di ruangan bapak, bersama pak FX Widarto. Kesan pertama saya adalah bapak sosok pimpinan yang kalem dan tidak mempressure bawahannya. Saya merasakan persepsi saya masih sama saat di DR. Di beberapa bulan ini dan yang merupakan bulan-bulan terakhir bapak di BI, arahan bapak clear untuk kami jalankan meski dengan tantangan stakheholder satker lain pada saat membahas kastip dan buku pandawa. Sebagai sesama pegawai yang akan meninggalkan DR dalam waktu dekat ini, sosok bapak akan saya ingat dengan nuansa positif. Semoga bapak dan keluarga senantiasa diberikan kebaikan dari Allah SWT dalam masa purna bakti bapak. Dengan segala kerendahan hati, mohon dukungan bapak dalam karir saya kedepan."},
 }
 
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = st.secrets["OPENROUTER_API_KEY"]
 HEADERS = {
     "Authorization": f"Bearer {OPENROUTER_API_KEY}",
     "HTTP-Referer": "https://localhost:8501",  # Updated to https
