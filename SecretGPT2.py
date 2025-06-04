@@ -19,12 +19,12 @@ teman = {
     "Brilliant99": {"nama": "Bandoe Widiarto", "pesan": "Halo, ini pesan pribadi Abil untuk Bp. Bandoe.", "kesan": "Kita pertama kali ketemu saat ikut melakukan pengawasan PJP di Surabaya 2024. Saya mewakili teman-teman KPwDN melaporkan hasil temuan ke bapak di ruangan bapak, bersama pak FX Widarto. Kesan pertama saya adalah bapak sosok pimpinan yang kalem dan tidak mempressure bawahannya. Saya merasakan persepsi saya masih sama saat di DR. Di beberapa bulan ini dan yang merupakan bulan-bulan terakhir bapak di BI, arahan bapak clear untuk kami jalankan meski dengan tantangan stakheholder satker lain pada saat membahas kastip dan buku pandawa. Sebagai sesama pegawai yang akan meninggalkan DR dalam waktu dekat ini, sosok bapak akan saya ingat dengan nuansa positif. Semoga bapak dan keluarga senantiasa diberikan kebaikan dari Allah SWT dalam masa purna bakti bapak. Dengan segala kerendahan hati, mohon dukungan bapak dalam karir saya kedepan."},
 }
 
-OPENROUTER_API_KEY = "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"
-MODELS = "deepseek/deepseek-chat-v3-0324"
+OPENROUTER_API_KEY = "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"
 HEADERS = {
-  "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-  "HTTP-Referer": "http://localhost:8501",
-  "X-Title": "AI Chatbot Streamlit"
+    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+    "HTTP-Referer": "https://localhost:8501",  # Updated to https
+    "X-Title": "SecretGPT Chatbot",
+    "Content-Type": "application/json"  # Added content type header
 }
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
@@ -144,7 +144,7 @@ user_input = st.chat_input("Tulis pesan di sini...")
 
 if user_input:
     st.chat_message("user").markdown(user_input)
-
+    
     # Check if input matches any code in teman dictionary
     if user_input in teman:
         person = teman[user_input]
@@ -156,31 +156,48 @@ if user_input:
         st.chat_message("assistant").markdown(response_text)
         st.session_state.chat_history.append({"role": "user", "content": user_input})
         st.session_state.chat_history.append({"role": "assistant", "content": response_text})
-
+    
     else:
         # Continue with normal chatbot functionality
         content_to_send = user_input
         if file_content:
             content_to_send = f"File Content:\n{file_content}\n\nUser Question:\n{user_input}"
-
+        
         st.session_state.chat_history.append({"role": "user", "content": user_input})
 
         with st.spinner("Mengetik..."):
-            payload = {
-                "model": selected_model,
-                "temperature": temperature,
-                "max_tokens": max_tokens,
-                "messages": [
+            try:
+                messages = [
                     {"role": "system", "content": "You are a helpful assistant. You can analyze documents and answer questions about them."},
                     {"role": "user", "content": content_to_send}
                 ]
-            }
-
-        response = requests.post(API_URL, headers=HEADERS, json=payload)
-
-        if response.status_code == 200:
-            bot_reply = response.json()['choices'][0]['message']['content']
-        else:
-            bot_reply = f"⚠️ Maaf, gagal mengambil respons dari OpenRouter. Error: {response.status_code}"
-        st.chat_message("assistant").markdown(bot_reply)
-        st.session_state.chat_history.append({"role": "assistant", "content": bot_reply})
+                
+                payload = {
+                    "model": selected_model,
+                    "messages": messages,
+                    "temperature": temperature,
+                    "max_tokens": max_tokens,
+                    "headers": HEADERS
+                }
+                
+                response = requests.post(
+                    API_URL,
+                    headers=HEADERS,
+                    json=payload,
+                    timeout=60  # Added timeout
+                )
+                
+                if response.status_code == 401:
+                    st.error("API key unauthorized. Please check your OpenRouter API key.")
+                    bot_reply = "⚠️ Authentication failed. Please check the API key configuration."
+                else:
+                    response.raise_for_status()
+                    bot_reply = response.json()['choices'][0]['message']['content']
+                
+            except requests.exceptions.RequestException as e:
+                bot_reply = f"⚠️ Network Error: {str(e)}"
+            except Exception as e:
+                bot_reply = f"⚠️ Error: {str(e)}"
+            
+            st.chat_message("assistant").markdown(bot_reply)
+            st.session_state.chat_history.append({"role": "assistant", "content": bot_reply})
